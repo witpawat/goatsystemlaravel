@@ -116,7 +116,7 @@
             <tr>
                 <td><input type="checkbox" name="ids[]" class="selectbox" value="{{$goat->goatId}}"> </td>
                 <td>{{ $goat->goatId }}</td>
-                <td><img src="/storage/image/{{ $goat->image }}" height="75" width="75" alt="" /></td>
+                <td><img src="{{ $goat->image }}" height="75" width="75" alt="" /></td>
                 <td>{{ $goat->goatName }}</td>
                 <td>{{ $goat->gene }}</td>
                 <td>

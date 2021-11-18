@@ -17,6 +17,7 @@ use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use JD\Cloudder\Facades\Cloudder;
 
 class GoatController extends Controller
 {
@@ -50,56 +51,59 @@ class GoatController extends Controller
 
     public function store(Request $request){
 
-            $request->validate([
-            'goatId' => 'required',
-            'goatName' => 'required',
-            'sex' => 'required',
-            'gene' => 'required',
-            'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-            'colour' => 'required',
-            'dateOfBirth' => 'required',
-            'weightOfBirth' => 'required',
-            'arrivalDate' => 'required',
-            'fatherId' => 'required',
-            'fatherGoatName' => 'required',
-            'fatherGene' => 'required',
-            'motherId' => 'required',
-            'motherGoatName' => 'required',
-            'motherGene' => 'required',
+        $request->validate([
+        'goatId' => 'required',
+        'goatName' => 'required',
+        'sex' => 'required',
+        'gene' => 'required',
+        'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+        'colour' => 'required',
+        'dateOfBirth' => 'required',
+        'weightOfBirth' => 'required',
+        'arrivalDate' => 'required',
+        'fatherId' => 'required',
+        'fatherGoatName' => 'required',
+        'fatherGene' => 'required',
+        'motherId' => 'required',
+        'motherGoatName' => 'required',
+        'motherGene' => 'required',
 
-        ]);
-            if($request->hasFile('image')){
-               $filenameWithExt = $request->file('image')->getClientOriginalName();
-               $filename = pathinfo($filenameWithExt, PATHINFO_FILENAME);
-               $extension = $request->file('image')->getClientOriginalExtension();
-               $fileNameToStore = $filename.'_'.time().'.'.$extension;
-               $path = $request->file('image')->storeAs('public/image' , $fileNameToStore);
-            }else{
-                $fileNameToStore = 'noimage.jpg';
-            }
+    ]);
 
-            //$path = $request->file('image')->store('public/goatimages');
-            $goat = new Goat;
-            $goat -> goatId = $request->goatId;
-            $goat -> goatName = $request->goatName;
-            $goat -> sex = $request->sex;
-            $goat -> gene = $request->gene;
-            //$goat -> image = $path;
-            $goat -> image = $fileNameToStore;
-            $goat -> colour = $request->colour;
-            $goat -> dateOfBirth = $request->dateOfBirth;
-            $goat -> weightOfBirth = $request->weightOfBirth;
-            $goat -> arrivalDate = $request->arrivalDate;
-            $goat -> fatherId = $request->fatherId;
-            $goat -> fatherGoatName = $request->fatherGoatName;
-            $goat -> fatherGene = $request->fatherGene;
-            $goat -> motherId = $request->motherId;
-            $goat -> motherGoatName = $request->motherGoatName;
-            $goat -> motherGene = $request->motherGene;
-            $goat -> user_id = Auth::user()->id;
-            $goat -> save();
+    $image_name = $request->file('image')->getRealPath();
+        Cloudder::upload($image_name, null, array(
+            "folder" => "Goats", "overwrite" => FALSE,
+            "resource_type" => "image", "responsive" => TRUE,
+        ));
+        $public_id = Cloudder::getPublicId();
+        $width = 250;
+        $height = 250;
+        $image_url = Cloudder::show(Cloudder::getPublicId(), ["width" => $width, "height" => $height, "crop" => "scale", "quality" => 70, "secure" => "true"]);
 
-            return redirect()->route('goats.index')->with('success','Gost has been created successfully.');
+
+
+        $goat = new Goat;
+
+        $goat->public_id = $public_id;
+        $goat -> goatId = $request->goatId;
+        $goat -> goatName = $request->goatName;
+        $goat -> sex = $request->sex;
+        $goat -> gene = $request->gene;
+        $goat -> image = $image_url;
+        $goat -> colour = $request->colour;
+        $goat -> dateOfBirth = $request->dateOfBirth;
+        $goat -> weightOfBirth = $request->weightOfBirth;
+        $goat -> arrivalDate = $request->arrivalDate;
+        $goat -> fatherId = $request->fatherId;
+        $goat -> fatherGoatName = $request->fatherGoatName;
+        $goat -> fatherGene = $request->fatherGene;
+        $goat -> motherId = $request->motherId;
+        $goat -> motherGoatName = $request->motherGoatName;
+        $goat -> motherGene = $request->motherGene;
+        $goat -> user_id = Auth::user()->id;
+        $goat -> save();
+
+        return redirect()->route('goats.index')->with('success','สร้างข้อมูลแพะสำเร็จแล้ว.');
 
         }
 

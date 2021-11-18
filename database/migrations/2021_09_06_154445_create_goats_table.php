@@ -14,6 +14,7 @@ class CreateGoatsTable extends Migration
     public function up()
     {
         Schema::create('goats', function (Blueprint $table) {
+            $table->string('public_id');
             $table->string('goatId')->primary();
             $table->string('goatName');
             $table->string('sex');
